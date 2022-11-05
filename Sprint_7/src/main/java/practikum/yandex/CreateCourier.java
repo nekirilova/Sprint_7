@@ -1,3 +1,5 @@
+package practikum.yandex;
+
 public class CreateCourier {
 
     private String login;

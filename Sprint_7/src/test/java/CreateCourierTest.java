@@ -1,8 +1,9 @@
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import practikum.yandex.CreateAndDeleteCourier;
+import practikum.yandex.CreateCourier;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
@@ -10,6 +11,7 @@ import static io.restassured.RestAssured.given;
 
 public class CreateCourierTest {
     CreateCourier createCourier;
+    CreateAndDeleteCourier createAndDeleteCourier;
     @Before
     public void setUp() {
         RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
