@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.equalTo;
 import static io.restassured.RestAssured.given;
 
 public class CreateCourierTest {
@@ -11,7 +13,7 @@ public class CreateCourierTest {
     @Before
     public void setUp() {
         RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
-        createCourier = new CreateCourier("alenushka", "1234", "Alena");
+        createCourier = new CreateCourier("alla", "1234", "Alena");
     }
 
     @Test
@@ -25,10 +27,16 @@ public class CreateCourierTest {
             response.then().statusCode(201);
     }
 
-//    @Test
-//    public void createDoubleCourierReturnsStatusCode409() {
-//
-//    }
+    @Test
+    public void createCourierSuccessfullyReturnsCorrectResponse() {
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(createCourier)
+                .when()
+                .post("/api/vi/courier");
+        response.then().assertThat().body("ok", equalTo(true));
+    }
 
 //    @After
 //    public void deleteCourier() {
