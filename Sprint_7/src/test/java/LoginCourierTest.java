@@ -8,6 +8,7 @@ import practikum.yandex.LoginCourier;
 import practikum.yandex.LoginResponse;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 
 public class LoginCourierTest {
@@ -17,14 +18,9 @@ CreateAndDeleteCourier createAndDeleteCourier= new CreateAndDeleteCourier();
 
 @Before
     public void setUp() {
-    RestAssured.baseURI = createAndDeleteCourier.getBASE_URI();
-   //создаем курьера перед каждым тестом
-   given().header("Content-type", "application/json")
-            .and()
-            .body(createAndDeleteCourier.createNewCourier())
-            .when()
-            .post("/api/v1/courier");
-    //создаем объект для авторизации созданного курьера
+//   создаем нового курьера:
+    createAndDeleteCourier.sendPostToCreateCourier();
+    //создаем объект для авторизации созданного курьера:
     loginCourier = new LoginCourier(createAndDeleteCourier.getLogin(), createAndDeleteCourier.getPassword());
 }
 
@@ -49,7 +45,8 @@ CreateAndDeleteCourier createAndDeleteCourier= new CreateAndDeleteCourier();
  }
  @Test
     public void loginCourierWithIncorrectPasswordReturnsStatusCode404() {
-     loginCourierIncorrectData = new LoginCourier(createAndDeleteCourier.getLogin(), createAndDeleteCourier.getIncorrectPassword());//создаем объект для авторизации с
+     loginCourierIncorrectData = new LoginCourier(createAndDeleteCourier.getLogin(),
+             createAndDeleteCourier.getIncorrectPassword());//создаем объект для авторизации с
      // неправильными данными
 
 Response response = given()
@@ -74,7 +71,7 @@ response.then().statusCode(404);
 
  }
 
-    @Test
+    @Test//проверяем авторизацию несуществующего пользователя или авторизацию с неправильным логином
     public void loginCourierWithIncorrectLoginReturnsStatusCode404() {
         loginCourierIncorrectData = new LoginCourier(createAndDeleteCourier.getIncorrectLogin(), createAndDeleteCourier.getPassword());//создаем объект для авторизации с
         // неправильными данными
@@ -99,6 +96,64 @@ response.then().statusCode(404);
         given().header("Content-type","application/json")
                 .delete("/api/v1/courier/" + loginResponse.getId());
 
+    }
+
+    @Test
+    public void successfulLoginCourierReturnsId() {
+        //проверяем, что при авторизации существующего курьера приходит его id
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(loginCourier)
+                .when()
+                .post("/api/v1/courier/login");
+        response.then().assertThat().body("id", notNullValue());
+//десериализуем полученный id курьера и записываем его как объект класса LoginResponse
+        LoginResponse loginResponse = response.body()
+                .as(LoginResponse.class);
+
+        //Удаляем созданного курьера
+        given().header("Content-type","application/json")
+                .delete("/api/v1/courier/" + loginResponse.getId());
+
+    }
+
+    @Test
+    public void loginCourierWithoutLoginReturnsStatusCode400() {
+        String jsonBody = "{\"password\": \"1234\"}";
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(jsonBody)
+                .when()
+                .post("/api/v1/courier/login");
+        response.then().statusCode(400);
+        //десериализуем полученный id курьера и записываем его как объект класса LoginResponse
+        LoginResponse loginResponse = response.body()
+                .as(LoginResponse.class);
+
+        //Удаляем созданного курьера
+        given().header("Content-type","application/json")
+                .delete("/api/v1/courier/" + loginResponse.getId());
+    }
+
+    @Test
+    public void loginCourierWithoutPasswordReturnsStatusCode400() {
+        String jsonBody = "{\"login\": \"hoho\"}";
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(jsonBody)
+                .when()
+                .post("/api/v1/courier/login");
+        response.then().statusCode(400);
+        //десериализуем полученный id курьера и записываем его как объект класса LoginResponse
+        LoginResponse loginResponse = response.body()
+                .as(LoginResponse.class);
+
+        //Удаляем созданного курьера
+        given().header("Content-type","application/json")
+                .delete("/api/v1/courier/" + loginResponse.getId());
     }
 
 }

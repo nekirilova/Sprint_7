@@ -1,6 +1,9 @@
 package practikum.yandex;
 
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
+
+import static io.restassured.RestAssured.given;
 
 //класс для создания и удаления курьера до и после тестов
 public class CreateAndDeleteCourier {
@@ -16,9 +19,11 @@ public class CreateAndDeleteCourier {
     public String getIncorrectLogin() {
         return INCORRECT_LOGIN;
     }
+
     public String getIncorrectPassword() {
         return INCORRECT_PASSWORD;
     }
+
     public String getLogin() {
         return LOGIN;
     }
@@ -30,16 +35,30 @@ public class CreateAndDeleteCourier {
     public String getFirstName() {
         return FIRST_NAME;
     }
+
     public String getBASE_URI() {
         return BASE_URI;
     }
 
     CreateCourier createCourier;
-//метод для создания нового курьера
+    Response response;
+    LoginResponse loginResponse;
+
+    //создаем объект нового курьера
     public CreateCourier createNewCourier() {
-      //  RestAssured.baseURI = BASE_URI;
-       createCourier = new CreateCourier(LOGIN, PASSWORD, FIRST_NAME);
-       return createCourier;
+         createCourier = new CreateCourier(LOGIN, PASSWORD, FIRST_NAME);
+        return createCourier;
+    }
+//отправляем post запрос для создания курьера
+    public void  sendPostToCreateCourier() {
+        RestAssured.baseURI = BASE_URI;
+        response = given().header("Content-type", "application/json")
+                .and()
+                .body(createNewCourier())
+                .when()
+                .post("/api/v1/courier");
+
+
     }
 
-   }
+}
