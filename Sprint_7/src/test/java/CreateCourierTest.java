@@ -48,6 +48,41 @@ public class CreateCourierTest {
 
     }
 
+//    @Test
+//    public void createTwoSameCouriersReturnsStatusCode409() {
+//       Response response = given()
+//               .header("Content-type", "application/json")
+//               .and()
+//               .body(createCourier)
+//               .when()
+//               .post("/api/vi/courier");
+//        response.then().statusCode(201);
+//
+//    }
+    @Test
+    public void createCourierWithoutLoginReturnsStatusCode400() {
+        String jsonBody = "{\"password\": \"1234\", \"firstName\": \"Alena\"}";
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(jsonBody)
+                .when()
+                .post("/api/v1/courier");
+        response.then().statusCode(400);
+    }
+
+    @Test
+    public void createCourierWithoutPasswordReturnsStatusCode400() {
+        String jsonBody = "{\"login\": \"hoho\", \"firstName\": \"Alena\"}";
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(jsonBody)
+                .when()
+                .post("/api/v1/courier");
+        response.then().statusCode(400);
+    }
+
 @After
     public void deleteCourier() {
         loginCourier = new LoginCourier(createAndDeleteCourier.getLogin(), createAndDeleteCourier.getPassword());
