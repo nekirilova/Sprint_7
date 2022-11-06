@@ -1,9 +1,10 @@
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import practikum.yandex.CreateAndDeleteCourier;
-import practikum.yandex.CreateCourier;
+import practikum.yandex.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
@@ -11,11 +12,15 @@ import static io.restassured.RestAssured.given;
 
 public class CreateCourierTest {
     CreateCourier createCourier;
-    CreateAndDeleteCourier createAndDeleteCourier;
+    LoginCourier loginCourier;
+    LoginResponse loginResponse;
+    CreateResponse createResponse;
+    CreateAndDeleteCourier createAndDeleteCourier = new CreateAndDeleteCourier();
     @Before
     public void setUp() {
         RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
-        createCourier = new CreateCourier("alla", "1234", "Alena");
+        createCourier = new CreateCourier(createAndDeleteCourier.getLogin(), createAndDeleteCourier.getPassword(), createAndDeleteCourier.getFirstName());
+
     }
 
     @Test
@@ -37,11 +42,23 @@ public class CreateCourierTest {
                 .body(createCourier)
                 .when()
                 .post("/api/vi/courier");
-        response.then().assertThat().body("ok", equalTo(true));
+        createResponse = response.body().as(CreateResponse.class);
+        boolean actualValue = createResponse.isTrue();
+        Assert.assertTrue("The value should be true", actualValue);
+
     }
 
-//    @After
-//    public void deleteCourier() {
-//
-//    }
+@After
+    public void deleteCourier() {
+        loginCourier = new LoginCourier(createAndDeleteCourier.getLogin(), createAndDeleteCourier.getPassword());
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(loginCourier)
+                .when()
+                .post("/api/v1/courier/login");
+        loginResponse = response.body().as(LoginResponse.class);
+    given().header("Content-type","application/json")
+            .delete("/api/v1/courier/" + loginResponse.getId());
+}
 }
