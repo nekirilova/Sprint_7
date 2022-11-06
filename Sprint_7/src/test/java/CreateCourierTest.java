@@ -41,24 +41,49 @@ public class CreateCourierTest {
                 .and()
                 .body(createCourier)
                 .when()
-                .post("/api/vi/courier");
+                .post("/api/v1/courier");
         createResponse = response.body().as(CreateResponse.class);
         boolean actualValue = createResponse.isTrue();
         Assert.assertTrue("The value should be true", actualValue);
 
     }
 
-//    @Test
-//    public void createTwoSameCouriersReturnsStatusCode409() {
-//       Response response = given()
-//               .header("Content-type", "application/json")
-//               .and()
-//               .body(createCourier)
-//               .when()
-//               .post("/api/vi/courier");
-//        response.then().statusCode(201);
-//
-//    }
+@Test
+public void createSameCourierReturnsStatusCode409() {
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(createCourier)
+                .when()
+                .post("/api/v1/courier");
+        response.then().statusCode(201);
+    Response secondResponse = given()
+            .header("Content-type", "application/json")
+            .and()
+            .body(createCourier)
+            .when()
+            .post("/api/v1/courier");
+    secondResponse.then().statusCode(409);
+}
+
+    @Test
+    public void createSameCourierReturnsCorrectMessage() {
+        Response response = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(createCourier)
+                .when()
+                .post("/api/v1/courier");
+        response.then().statusCode(201);
+        Response secondResponse = given()
+                .header("Content-type", "application/json")
+                .and()
+                .body(createCourier)
+                .when()
+                .post("/api/v1/courier");
+        secondResponse.then().assertThat().body("message", equalTo("Этот логин уже используется"));
+
+    }
     @Test
     public void createCourierWithoutLoginReturnsStatusCode400() {
         String jsonBody = "{\"password\": \"1234\", \"firstName\": \"Alena\"}";
